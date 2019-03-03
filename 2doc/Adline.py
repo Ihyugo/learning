@@ -58,10 +58,10 @@ class AdalineGD(object):
         """総入力を計算"""
         return np.dot(X, self.w_[1:]) + self.w_[0]
 
-    def activatation(self, X):
+    def activation(self, X):
         """線形活性化関数の出力を計算"""
         return self.net_input(X)
 
     def predict(self, X):
         """1ステップ後のクラスラベルを返す"""
-        return np.where(self.acrivation(X) >= 0.0, 1, -1)
+        return np.where(self.activation(X) >= 0.0, 1, -1)
