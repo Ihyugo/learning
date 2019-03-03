@@ -1,0 +1,3 @@
+python_line.py #テキストのコマンドラインに記載されているコード
+Perceptron.py #パーセプトロンの学習に関するプログラム
+iris_marker.py #Perceptron.pyによる学習結果から、アイリスデータを分類する
