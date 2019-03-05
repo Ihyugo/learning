@@ -1,5 +1,6 @@
 import numpy as np
 class Perceptron(object):
+    print(object)
     """パーセプトロンの分類器
 
     パラメータ
