@@ -1,110 +1,7 @@
-
-#text p.94
-
-import pandas as pd
-from io import StringIO
-#　サンプルデータを作成
-csv_data = '''A,B,C,D
-1.0,2.0,3.0,4.0
-5.0,6.0,,8.0
-10.0,11.0,12.0,'''
-# Python2.7を使用している場合は文字列をunicodeに変換する必要がある
-#ｃｓｖ_data = unicode(csv_data)
-#サンプルデータを読み込む
-df = pd.read_csv(StringIO(csv_data))
-print(df)
-print("\n")
-#各特徴量の欠測値をカウント
-print(df.isnull().sum())
-print("\n")
-
-# 欠測値削除
-
-#欠測値を含む行を削除
-print(df.dropna())
-print("\n")
-#欠測値を含む行を削除
-print(df.dropna(axis=1))
-#すべての列がNaNである行だけを削除
-print(df.dropna(how='all'))
-#非NaN値が4つ未満の行を削除
-print(df.dropna(thresh=4))
-#特定の列（この場合は'C'）にNaNが含まれている行だけ削除
-print(df.dropna(subset=['C']))
-
-# 平均値補完 text p.96
-print("\n")
-from sklearn.preprocessing import Imputer
-# 欠測値補完のインスタンスを生成（平均値補完）
-imr = Imputer(missing_values='NaN', strategy='mean', axis=1) #axis=0で列の平均、axis=1で行の平均
-# データを適合
-imr = imr.fit(df)
-# 補完を実行
-imputed_data = imr.transform(df.values)
-print(imputed_data)
-
-# category data の処理
-# text p.98
-print("\n Tシャツ \n")
-import pandas as pd
-#サンプルデータを生成（Tシャツの色、サイズ、価格、クラスラベル）
-df = pd.DataFrame([
-['green', 'M', 10.1, 'class1'],
-['red', 'L', 13.5, 'class2'],
-['blue', 'XL', 15.3, 'class1']])
-#列名を指定
-df.columns = ['color', 'size', 'price', 'classlabel']
-print(df)
-
-# Tシャツのサイズと整数を対応させるディクショナリを生成
-size_mapping = {'XL': 3, 'L': 2, 'M': 1}
-#　Tシャツのサイズを整数に変換
-df['size'] = df['size'].map(size_mapping)
-print(df)
-
-import numpy as np
-#　クラスラベルと整数を対応させるディクショナリを生成
-class_mapping = {label:idx for idx,
-    label in enumerate(np.unique(df['classlabel']))}
-print(class_mapping)
-
-# クラスラベルを整数に変換
-df['classlabel'] = df['classlabel'].map(class_mapping)
-print(class_mapping)
-
-#　整数とクラスラベルを対応させるディクショナリを生成
-inv_class_mapping = {v: k for k, v in class_mapping.items()}
-# 整数からクラスラベルに変換
-df['classlabel'] = df['classlabel'].map(inv_class_mapping)
-print(df)
-
-from sklearn.preprocessing import LabelEncoder
-# ラベルエンコーダのインスタンスを生成
-class_le = LabelEncoder()
-#　クラスラベルから整数に変換
-y = class_le.fit_transform(df['classlabel'].values)
-print(y)
-
-# クラスラベルを文字列に戻す
-print(class_le.inverse_transform(y))
-
-# Tシャツの色、サイズ、価格を抽出
-X = df[['color', 'size', 'price']].values
-color_le = LabelEncoder()
-X[:, 0] = color_le.fit_transform(X[:, 0])
-print(X)
-
 # text p.102
 
-from sklearn.preprocessing import OneHotEncoder
-#one-hot エンコーダの生成
-ohe = OneHotEncoder(categorical_features=[0])
-# one-hotエンコーディングの生成
-print(ohe.fit_transform(X).toarray())
-
-# one-hot絵コーディングの実行
-pd.get_dummies(df[['price', 'color', 'size']])
-
+import pandas as pd
+import numpy as np
 #wineデータセットを読み込む
 
 df_wine = pd.read_csv(
@@ -210,3 +107,60 @@ knn = KNeighborsClassifier(n_neighbors=2)
 sbs = SBS(knn, k_features=1)
 #　逐次交代選択を実行
 sbs.fit(X_train_std, y_train)
+
+# 近傍点の個数のリスト（13, 12, ..... ,1)
+k_feat = [len(k) for k in sbs.subsets_]
+# 横軸を近傍点の個数、縦軸をスコアとした折れ線グラフのプロット
+plt.plot(k_feat, sbs.scores_, marker='o')
+plt.ylim([0.7, 1.1])
+plt.ylabel('Accuracy')
+plt.xlabel('Number of features')
+plt.grid()
+plt.show()
+
+# text p.113
+
+k5 = list(sbs.subsets_[8])
+print(df_wine.columns[1:][k5])
+#13個すべての特徴量を用いてモデルに適合
+knn.fit(X_train_std, y_train)
+# トレーニングの正解率を出力
+print('Training accuracy:', knn.score(X_train_std, y_train))
+# テストの正解率を出力
+print('Test accuracy:', knn.score(X_test_std, y_test))
+
+# 5このの特徴量を用いてモデルに適合
+knn.fit(X_train_std[:, k5], y_train)
+# トレーニングデータの正解率を出力
+print('Training accuracy:', knn.score(X_train_std[:, k5], y_train))
+# テストの正解率を出力
+print('Test accuracy:', knn.score(X_test_std[:, k5], y_test))
+
+
+from sklearn.ensemble import RandomForestClassifier
+# wineデータセットの特徴量の名称
+feat_labels = df_wine.columns[1:]
+# ランダムフォレストオブジェクトの生成
+# （木の個数=10000、　すべてのコアを用いて並列計算を実行)
+forest = RandomForestClassifier(n_estimators=10000, random_state=0, n_jobs=-1)
+# モデルに適合
+forest.fit(X_train, y_train)
+# 特徴量の重要度を抽出
+importances = forest.feature_importances_
+# 重要度の降順で特徴量のインデックスを抽出
+indices = np.argsort(importances)[::-1]
+# 重要度の講ずんで特徴量の名称、重要度を表示
+for f in range(X_train.shape[1]):
+    print("%2d) %-*s %f" %
+                (f + 1, 30, feat_labels[indices[f]], importances[indices[f]]))
+
+plt.title('Feature Importances')
+plt.bar(range(X_train.shape[1]), importances[indices], color='lightblue', align='center')
+plt.xticks(range(X_train.shape[1]), feat_labels[indices], rotation=90)
+plt.xlim([-1, X_train.shape[1]])
+plt.tight_layout()
+plt.show()
+
+# 重量度が0.15以上の特徴量を抽出
+X_selected = forest.transform(X_train, threshold=0.15)
+print(X_selected.shape)
