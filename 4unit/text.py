@@ -4,9 +4,7 @@ import pandas as pd
 import numpy as np
 #wineデータセットを読み込む
 
-df_wine = pd.read_csv(
-'https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data',
- header=None)
+df_wine = pd.read_csv('../wine.csv', header=None)
 print(df_wine)
 df_wine.columns = ['Class label', 'Alcohol', 'Malic acid', 'Ash',
                    'Alcalinity of ash', 'Magnesium', 'Total phenols', 'Flavanoids',
@@ -19,7 +17,7 @@ df_wine.head()
 
 # text p.104
 
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 # 特徴量とクラスラベルを別々に抽出
 X, y = df_wine.iloc[:, 1:].values, df_wine.iloc[:, 0].values
 # トレーニングデータとテストデータに分割
